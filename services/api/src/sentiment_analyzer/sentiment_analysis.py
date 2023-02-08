@@ -28,7 +28,7 @@ class SentimentAnalysis():
 
     def checkpath(self):
         model_name = "my_sst2_tuned_model"
-        model_dir = ""
+        model_dir = ".services/api/src/model" #file too big for github #host in S3
         MODEL_PATH = os.path.join(model_dir, model_name)
         if os.path.isfile(MODEL_PATH):
             return MODEL_PATH
