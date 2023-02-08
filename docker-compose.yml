@@ -1,0 +1,62 @@
+version: "3.7"
+
+services:
+
+  # API server
+  api:
+    container_name: aktify_api_1
+    build:
+      context: ./services/api
+      target: development
+    depends_on:
+      - db
+    environment:
+      - FLASK_ENV=development
+      - PORT=5000
+      - POSTGRES_DB=${DATABASE_NAME:-aktify}
+      - POSTGRES_HOST=aktify_db_1
+      - POSTGRES_PASSWORD=${DATABASE_PASSWORD:-postgres}
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=${DATABASE_USERNAME:-postgres}
+    ports:
+      - ${API_PORT:-5051}:5000
+    volumes:
+      - ./services/api:/app
+
+
+  # Database server
+  db:
+    container_name: aktify_db_1
+    image: postgres:12.2-alpine
+    environment:
+      - POSTGRES_DB=${DATABASE_NAME:-aktify}
+      - POSTGRES_PASSWORD=${DATABASE_PASSWORD:-postgres}
+      - POSTGRES_USER=${DATABASE_USERNAME:-postgres}
+    ports:
+      - ${DATABASE_PORT:-5432}:5432
+    restart: always
+    volumes:
+      - aktify_db_data:/var/lib/postgresql/data
+
+
+  # Database administration UI
+  dbAdmin:
+    container_name: aktify_db_admin_1
+    depends_on:
+      - db
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=${EMAIL_ADDRESS}
+      - PGADMIN_DEFAULT_PASSWORD=${DB_ADMIN_PASSWORD:-password}
+    image: dpage/pgadmin4
+    ports:
+      - ${DB_ADMIN_PORT:-5050}:80
+    restart: always
+    volumes:
+      - ./services/db-admin/servers.json:/pgadmin4/servers.json
+      - aktify_db_admin_data:/var/lib/pgadmin
+
+
+# Persistent volumes retain important data even after running `docker-compose down`
+volumes:
+  aktify_db_data:
+  aktify_db_admin_data:
